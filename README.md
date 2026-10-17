@@ -1,4 +1,4 @@
-# Calculator App — Phase 3
+# Calculator App: Phase 3
 
 ## Project Overview
 The Calculator App is a Flutter project developed as part of Phase 3 of my internship at GeniuSoft. This project focuses on State Management and Forms in Flutter.
