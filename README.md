@@ -25,6 +25,7 @@ The Calculator App is a Flutter project developed as part of Phase 3 of my inter
 - **State Management:** Used setState() to update the interface in response to user actions.
 - **Input Validation:** Added validation to check numerical input before calculations.
 - **App Icon:** Configured the flutter_launcher_icons package to generate a custom Android launcher icon.
+- **Calculation Result Formatting:** Whole-number operands were displaying unnecessary decimal points, such as 5.0 + 3.0 =. Updated the formatting logic to display 5 + 3 = and the result as 8, while preserving decimal values when needed.
 
 ## Conclusion
 This project helped me practise State Management, Forms, input validation, and basic calculations in Flutter. It also improved my understanding of Flutter project organization and reusable widgets.

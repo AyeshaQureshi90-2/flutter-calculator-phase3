@@ -54,6 +54,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             display == 'Cannot divide by zero') {
           return;
         }
+
         expression = '$display $value';
         selectedOperator = value;
         display = '0';
@@ -110,20 +111,23 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         return;
     }
 
-    expression = '$first $selectedOperator $second =';
+    expression =
+        '${formatResult(first)} $selectedOperator ${formatResult(second)} =';
+
     display = formatResult(result);
     selectedOperator = null;
   }
 
   String formatResult(double value) {
     if (!value.isFinite) return 'Error';
+
     if (value == value.roundToDouble()) {
       return value.toInt().toString();
     }
-    return value.toStringAsPrecision(10).replaceFirst(
-          RegExp(r'\.?0+$'),
-          '',
-        );
+
+    return value
+        .toStringAsPrecision(10)
+        .replaceFirst(RegExp(r'\.?0+$'), '');
   }
 
   void calculateFromForm() {
@@ -171,7 +175,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
     setState(() {
       expression =
-          '${firstController.text} $selectedOperator ${secondController.text} =';
+          '${firstController.text.trim()} $selectedOperator ${secondController.text.trim()} =';
       display = formatResult(result);
     });
   }
@@ -200,9 +204,11 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         if (value == null || value.trim().isEmpty) {
           return 'Please enter a number';
         }
+
         if (double.tryParse(value.trim()) == null) {
           return 'Enter a valid number';
         }
+
         return null;
       },
     );
@@ -479,8 +485,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                   ],
                 ),
               ),
-
-              
             ],
           ),
         ),
