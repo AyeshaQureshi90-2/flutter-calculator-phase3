@@ -22,6 +22,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   String display = '0';
   String expression = '';
   String? selectedOperator;
+  String? previewResult;
+  bool secondOperandStarted = false;
 
   @override
   void dispose() {
@@ -36,6 +38,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         display = '0';
         expression = '';
         selectedOperator = null;
+        previewResult = null;
+        secondOperandStarted = false;
         firstController.clear();
         secondController.clear();
       } else if (value == '⌫') {
@@ -47,6 +51,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         } else {
           display = '0';
         }
+
+        if (selectedOperator != null) {
+          secondOperandStarted = display != '0';
+        }
       } else if (value == '=') {
         calculateFromKeypad();
       } else if (['+', '−', '×', '÷'].contains(value)) {
@@ -55,12 +63,18 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
           return;
         }
 
+        // Use the current number as the first operand.
         expression = '$display $value';
         selectedOperator = value;
         display = '0';
+        previewResult = null;
+        secondOperandStarted = false;
       } else if (value == '.') {
         if (!display.contains('.')) {
           display += '.';
+          if (selectedOperator != null) {
+            secondOperandStarted = true;
+          }
         }
       } else {
         if (display == '0' ||
@@ -70,8 +84,63 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         } else {
           display += value;
         }
+
+        if (selectedOperator != null) {
+          secondOperandStarted = true;
+        }
+      }
+
+      // Update the answer before the user presses equals.
+      if (value != '=' && selectedOperator != null) {
+        updateLivePreview();
       }
     });
+  }
+
+  void updateLivePreview() {
+    previewResult = null;
+
+    if (!secondOperandStarted ||
+        selectedOperator == null ||
+        expression.isEmpty) {
+      return;
+    }
+
+    final parts = expression.split(' ');
+    if (parts.isEmpty) return;
+
+    final first = double.tryParse(parts.first);
+    final second = double.tryParse(display);
+
+    if (first == null || second == null) return;
+
+    double result;
+
+    switch (selectedOperator) {
+      case '+':
+        result = first + second;
+        break;
+      case '−':
+        result = first - second;
+        break;
+      case '×':
+        result = first * second;
+        break;
+      case '÷':
+        if (second == 0) {
+          expression =
+              '${formatResult(first)} $selectedOperator $display';
+          return;
+        }
+        result = first / second;
+        break;
+      default:
+        return;
+    }
+
+    expression =
+        '${formatResult(first)} $selectedOperator $display';
+    previewResult = formatResult(result);
   }
 
   void calculateFromKeypad() {
@@ -83,6 +152,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
     if (first == null || second == null) {
       display = 'Error';
+      previewResult = null;
       return;
     }
 
@@ -103,6 +173,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
           display = 'Cannot divide by zero';
           expression = '';
           selectedOperator = null;
+          previewResult = null;
+          secondOperandStarted = false;
           return;
         }
         result = first / second;
@@ -116,6 +188,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
     display = formatResult(result);
     selectedOperator = null;
+    previewResult = null;
+    secondOperandStarted = false;
   }
 
   String formatResult(double value) {
@@ -177,6 +251,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       expression =
           '${firstController.text.trim()} $selectedOperator ${secondController.text.trim()} =';
       display = formatResult(result);
+      previewResult = null;
     });
   }
 
@@ -284,7 +359,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerRight,
                       child: Text(
-                        display,
+                        previewResult ?? display,
                         style: const TextStyle(
                           color: lightPurple,
                           fontSize: 38,
@@ -382,12 +457,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                     label: '.',
                     onPressed: () => pressButton('.'),
                   ),
-                  CalculatorButton(
-                    label: '⌫',
-                    background: palePurple,
-                    foreground: lightPurple,
-                    onPressed: () => pressButton('⌫'),
-                  ),
+                
                 ],
               ),
 
